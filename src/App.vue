@@ -1,37 +1,53 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import ComboBox from "./components/ComboBox.vue";
 
-const greetMsg = ref("");
+const dragging = ref(false);
+
+
+function handleDrop(e: any)
+{
+  console.log("HERE");
+
+  dragging.value = false;
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    console.log("Fichiers déposés: ", files);
+  }
+}
+
+
+/*const greetMsg = ref("");
 const name = ref("");
 
 async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
-}
+}*/
+
 </script>
 
 <template>
   <main class="container">
     <div class="row">
       Convert
-      <select name="input-format" id="input-format">
-        <option value="mp3">MP3</option>
-        <option value="m4a">M4A</option>
-        <option value="flac">FLAC</option>
-        <option value="weba">WEBA</option>
-      </select>
-
+      <ComboBox />
       to
-
-      <select name="output-format" id="output-format">
-        <option value="mp3">MP3</option>
-        <option value="m4a">M4A</option>
-        <option value="flac">FLAC</option>
-        <option value="weba">WEBA</option>
-      </select>
-
+      <ComboBox />
       <button>Convert</button>
+    </div>
+
+    <div
+      class="drop"
+      @dragenter.prevent="dragging = true"
+      @dragexit.prevent="dragging = false"
+      @dragover.prevent
+      @drop="handleDrop"
+    >
+      Drop files here or click...
+
+      <button>Choose Files</button>
     </div>
   </main>
 </template>
@@ -90,6 +106,23 @@ async function greet() {
   align-items: center;
   gap: 10px;
   font-size: 18px;
+}
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  gap: 10px;
+  background-color: #4b4b4b;
+  border: 2px dashed rgb(167, 167, 167);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.drop:hover {
+  background-color: #242424;
 }
 
 a {
@@ -153,8 +186,13 @@ button {
     color: #24c8db;
   }
 
+  select {
+    /*appearance: none;*/
+    color: #ffffff;
+    background-color: #0f0f0f98;
+  }
+
   input,
-  select,
   button {
     color: #ffffff;
     background-color: #0f0f0f98;
