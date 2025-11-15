@@ -1,22 +1,20 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { Ref, ref } from "vue";
 import ComboBox from "./components/ComboBox.vue";
+import DropFile from "./components/DropFile.vue";
 
-const dragging = ref(false);
+const inputFiles: Ref<File[]> = ref([]);
 
-
-function handleDrop(e: any)
+function onNewFiles(files: FileList)
 {
-  console.log("HERE");
-
-  dragging.value = false;
-  const files = e.dataTransfer.files;
-  if (files.length > 0) {
-    console.log("Fichiers déposés: ", files);
-  }
+  inputFiles.value.push(...files);
+  console.log(inputFiles.value);
 }
 
+function removeFile(i: number)
+{
+  inputFiles.value.splice(i, 1);
+}
 
 /*const greetMsg = ref("");
 const name = ref("");
@@ -30,24 +28,40 @@ async function greet() {
 
 <template>
   <main class="container">
-    <div class="row">
-      Convert
-      <ComboBox />
-      to
-      <ComboBox />
-      <button>Convert</button>
+    <h2>Universal Media Converter (UMC)</h2>
+    <DropFile @change="onNewFiles" />
+
+    <div class="files-container mt-5 mb-5">
+      <div v-for="file in inputFiles" :key="file.name" class="file-item">
+        <div class="file-info">
+          <p class="font-semibold text-amber-300">{{ file.name }}</p>
+        </div>
+
+        <div class="file-params">
+          <div class="flex items-center">
+            <div class="mr-2">Output :</div>
+            <ComboBox />
+          </div>
+
+          <button class="file-convert-btn">
+            Convert
+          </button>
+
+          <button class="icon-btn close-btn ml-10" @click="removeFile(inputFiles.indexOf(file))">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M20 6.91L17.09 4L12 9.09L6.91 4L4 6.91L9.09 12L4 17.09L6.91 20L12 14.91L17.09 20L20 17.09L14.91 12z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div
-      class="drop"
-      @dragenter.prevent="dragging = true"
-      @dragexit.prevent="dragging = false"
-      @dragover.prevent
-      @drop="handleDrop"
-    >
-      Drop files here or click...
-
-      <button>Choose Files</button>
+    <h3>Global Settings</h3>
+    <div>
+      <label>
+        Output Format :
+        <ComboBox />
+      </label>
     </div>
   </main>
 </template>
@@ -65,7 +79,7 @@ async function greet() {
 
 <style>
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Elms Sans", Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
@@ -80,13 +94,86 @@ async function greet() {
   -webkit-text-size-adjust: 100%;
 }
 
+.icon-btn {
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: #e8e8e8;
+}
+
+.icon-btn:active {
+  background: none;
+}
+
+.close-btn {
+  transition: color .2s;
+}
+
+.close-btn:hover {
+  color: rgb(255, 80, 80);
+}
+
+.close-btn:active {
+  color: rgb(201, 63, 63);
+}
+
+h2 {
+  font-size: x-large;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+
+h3 {
+  font-size: large;
+  font-weight: bold;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
 .container {
+  width: 100%;
   margin: 0;
-  padding-top: 10vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: start;
+  align-items: center;
   text-align: center;
+}
+
+.files-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  /*border: 1px solid rgb(63, 96, 139);*/
+  width: 70%;
+}
+
+.file-item {
+  display: flex;
+  justify-content: start;
+  padding: 5px 10px 5px 10px;
+  align-items: center;
+  width: 100%;
+  border: 1px solid rgb(107, 107, 107);
+}
+
+.file-info {
+  display: flex;
+  justify-content: start;
+  width: 40%;
+}
+
+.file-params {
+  display: flex;
+  justify-content: end;
+  width: 60%;
+}
+
+.file-convert-btn {
+  padding: 5px;
+  margin-left: 10px;
 }
 
 .logo {
