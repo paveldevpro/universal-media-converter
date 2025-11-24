@@ -2,8 +2,11 @@
 import { Ref, ref } from "vue";
 import ComboBox from "./components/ComboBox.vue";
 import DropFile from "./components/DropFile.vue";
+import { listen } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
 
 const inputFiles: Ref<File[]> = ref([]);
+const dropping = ref(false);
 
 function onNewFiles(files: FileList)
 {
@@ -15,6 +18,31 @@ function removeFile(i: number)
 {
   inputFiles.value.splice(i, 1);
 }
+
+
+listen('tauri://drag-over', () => {
+  dropping.value = true;
+});
+
+listen('tauri://drag-leave', () => {
+  dropping.value = false;
+});
+
+listen('tauri://drag-drop', e => {
+  dropping.value = false;
+
+  const payload: any = e.payload;
+  const paths: Array<String> = payload.paths;
+
+  console.log(paths);
+
+  invoke("drop", { file: paths[0] });
+
+  //const paths: Array<String> = e.payload?.paths;
+  //console.log()
+});
+
+
 
 /*const greetMsg = ref("");
 const name = ref("");
@@ -62,6 +90,15 @@ async function greet() {
         Output Format :
         <ComboBox />
       </label>
+    </div>
+
+    <div class="drop-notification" v-if="dropping">
+      <img
+        src="./assets/mdi--file-document-add.svg"
+        alt="Add Files Icon"
+        class="w-15"
+      />
+      <div>Drop any files here</div>
     </div>
   </main>
 </template>
@@ -132,9 +169,26 @@ h3 {
   margin-bottom: 10px;
 }
 
+.drop-notification {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(0, 93, 180);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  font-size: x-large;
+}
+
 .container {
   width: 100%;
   margin: 0;
+  padding: 0;
+  border: 0;
   display: flex;
   flex-direction: column;
   justify-content: start;
@@ -257,10 +311,6 @@ input,
 select,
 button {
   outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
 }
 
 @media (prefers-color-scheme: dark) {
