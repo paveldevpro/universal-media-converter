@@ -4,15 +4,16 @@ import ComboBox from "./components/ComboBox.vue";
 import DropFile from "./components/DropFile.vue";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import { FileInfo } from "./types";
 
-const inputFiles: Ref<File[]> = ref([]);
+const inputFiles: Ref<FileInfo[]> = ref([]);
 const dropping = ref(false);
 
-function onNewFiles(files: FileList)
+/*function onNewFiles(files: FileList)
 {
   inputFiles.value.push(...files);
   console.log(inputFiles.value);
-}
+}*/
 
 function removeFile(i: number)
 {
@@ -36,28 +37,26 @@ listen('tauri://drag-drop', e => {
 
   console.log(paths);
 
-  invoke("drop", { file: paths[0] });
-
-  //const paths: Array<String> = e.payload?.paths;
-  //console.log()
+  invoke("add_file", { filepath: paths[0] });
 });
 
+listen("file-added", e => {
+  console.log(e.payload);
 
+  const payload: any = e.payload;
+  const fileInfo: FileInfo = {
+    name: payload
+  };
 
-/*const greetMsg = ref("");
-const name = ref("");
-
-async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  greetMsg.value = await invoke("greet", { name: name.value });
-}*/
+  inputFiles.value.push(fileInfo);
+});
 
 </script>
 
 <template>
   <main class="container">
     <h2>Universal Media Converter (UMC)</h2>
-    <DropFile @change="onNewFiles" />
+    <DropFile />
 
     <div class="files-container mt-5 mb-5">
       <div v-for="file in inputFiles" :key="file.name" class="file-item">

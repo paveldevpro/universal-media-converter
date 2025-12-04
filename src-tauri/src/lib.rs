@@ -1,3 +1,8 @@
+use std::path::Path;
+
+use serde_json::json;
+use tauri::Emitter;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -5,8 +10,20 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn drop(file: &str) -> Result<(), String> {
-    println!("{}", format!("Dropping file: {}", file));
+fn add_file(app_handle: tauri::AppHandle, filepath: String) -> Result<(), String> {
+    let path = Path::new(&filepath);
+
+    let file_name = path.file_name()
+        .and_then(|n| n.to_str())
+        .ok_or("[ERROR] - Could not read file name")?
+        .to_string();
+
+    println!("File Name: {}", file_name);
+
+    app_handle.emit("file-added", json!({
+        file_name: "file"
+    }))
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -17,7 +34,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             greet,
-            drop
+            add_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
